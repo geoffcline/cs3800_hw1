@@ -14,6 +14,7 @@
 #define THRESHOLD 12
 int count = 0;
 double finalresult=0.0;
+int force = 0;
 pthread_mutex_t count_mutex;
 pthread_cond_t count_condvar;
 
@@ -36,6 +37,7 @@ void *sub1(void *t)
   */
   pthread_mutex_lock(&count_mutex);
   printf("sub1: thread=%ld going into wait. count=%d\n",tid,count);
+  force = 1;
   pthread_cond_wait(&count_condvar, &count_mutex);
   printf("sub1: thread=%ld Condition variable signal received.",tid);
   printf(" count=%d\n",count);
@@ -52,6 +54,11 @@ void *sub2(void *t)
   int j,i;
   long tid = (long)t;
   double myresult=0.0;
+
+  while(force == 0)
+  {
+    sleep(1);
+  }
 
   for (i=0; i<ITERATIONS; i++) 
   {
