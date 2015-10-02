@@ -66,7 +66,7 @@ void *sub2(void *t)
     */
     if (count == THRESHOLD) 
     {
-      printf("sub2: thread=%ld Threshold reached. count=%d. ",tid,count);
+      printf("sub2: thread=%ld Threshold reached. count=%d.\n",tid,count);
       pthread_cond_signal(&count_condvar);
       printf("Just sent signal.\n");
     }
