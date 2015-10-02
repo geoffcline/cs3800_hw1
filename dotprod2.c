@@ -131,9 +131,13 @@ for(i=0;i<MAXTHRDS;i++) {
 pthread_attr_destroy(&attr);
 
 /* Wait on the other threads */
+pthread_mutex_lock (&mutexsum);
+
 for(i=0;i<MAXTHRDS;i++) {
   pthread_join( callThd[i], &status);
   }
+
+pthread_mutex_unlock (&mutexsum);
 
 /* After joining, print out the results and cleanup */
 printf ("Done. Threaded version: sum =  %f \n", dotstr.sum);
