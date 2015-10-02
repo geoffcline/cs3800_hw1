@@ -14,9 +14,8 @@
 #define THRESHOLD 12
 int count = 0;
 double finalresult=0.0;
-int force = 0;
-pthread_mutex_t count_mutex;
-pthread_cond_t count_condvar;
+pthread_mutex_t count_mutex, setup_mutex;
+pthread_cond_t count_condvar, setup_condvar;
 
 
 void *sub1(void *t)
@@ -36,8 +35,9 @@ void *sub1(void *t)
   work is now done within the mutex lock of count.
   */
   pthread_mutex_lock(&count_mutex);
+  pthread_mutex_lock(&setup_mutex);
   printf("sub1: thread=%ld going into wait. count=%d\n",tid,count);
-  force = 1;
+  pthread_cond_signal(&setup_condvar);
   pthread_cond_wait(&count_condvar, &count_mutex);
   printf("sub1: thread=%ld Condition variable signal received.",tid);
   printf(" count=%d\n",count);
@@ -54,11 +54,6 @@ void *sub2(void *t)
   int j,i;
   long tid = (long)t;
   double myresult=0.0;
-
-  while(force == 0)
-  {
-    sleep(1);
-  }
 
   for (i=0; i<ITERATIONS; i++) 
   {
@@ -100,11 +95,16 @@ int main(int argc, char *argv[])
   /* Initialize mutex and condition variable objects */
   pthread_mutex_init(&count_mutex, NULL);
   pthread_cond_init (&count_condvar, NULL);
+  pthread_mutex_init(&setup_mutex, NULL);
+  pthread_cond_init (&setup_condvar, NULL);
 
   /* For portability, explicitly create threads in a joinable state */
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_create(&threads[0], &attr, sub1, (void *)t1);
+
+  pthread_cond_wait(&setup_condvar, &setup_mutex);
+
   pthread_create(&threads[1], &attr, sub2, (void *)t2);
   pthread_create(&threads[2], &attr, sub2, (void *)t3);
 
