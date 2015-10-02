@@ -53,9 +53,10 @@ void *sub2(void *t)
   long tid = (long)t;
   double myresult=0.0;
 
-  for (i=0; i<ITERATIONS; i++) {
+  for (i=0; i<ITERATIONS; i++) 
+  {
     for (j=0; j<100000; j++)
-		myresult += sin(j) * tan(i);
+		  myresult += sin(j) * tan(i);
     pthread_mutex_lock(&count_mutex);
     finalresult += myresult;
     count++;
@@ -63,17 +64,20 @@ void *sub2(void *t)
     Check the value of count and signal waiting thread when condition is
     reached. 
     */
-    if (count == THRESHOLD) {
+    if (count == THRESHOLD) 
+    {
       printf("sub2: thread=%ld Threshold reached. count=%d. ",tid,count);
       pthread_cond_signal(&count_condvar);
       printf("Just sent signal.\n");
-      }
-    else {
-      printf("sub2: thread=%ld did work. count=%d\n",tid,count);
-      }
-    pthread_mutex_unlock(&count_mutex);
     }
-    printf("sub2: thread=%ld  myresult=%e. Done. \n",tid,myresult);
+    else 
+    {
+      printf("sub2: thread=%ld did work. count=%d\n",tid,count);
+    }
+    
+    pthread_mutex_unlock(&count_mutex);
+  }
+  printf("sub2: thread=%ld  myresult=%e. Done. \n",tid,myresult);
   pthread_exit(NULL);
 }
 
