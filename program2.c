@@ -35,9 +35,12 @@ void *sub1(void *t)
   work is now done within the mutex lock of count.
   */
   pthread_mutex_lock(&count_mutex);
-  pthread_mutex_lock(&setup_mutex);
   printf("sub1: thread=%ld going into wait. count=%d\n",tid,count);
+
+  //signal that setup has completed 
   pthread_cond_signal(&setup_condvar);
+
+  //wait for condition variable signal before continuing 
   pthread_cond_wait(&count_condvar, &count_mutex);
   printf("sub1: thread=%ld Condition variable signal received.",tid);
   printf(" count=%d\n",count);
@@ -103,6 +106,7 @@ int main(int argc, char *argv[])
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_create(&threads[0], &attr, sub1, (void *)t1);
 
+  //wait for setup to complete before building other threads
   pthread_cond_wait(&setup_condvar, &setup_mutex);
 
   pthread_create(&threads[1], &attr, sub2, (void *)t2);
@@ -119,6 +123,8 @@ int main(int argc, char *argv[])
   pthread_attr_destroy(&attr);
   pthread_mutex_destroy(&count_mutex);
   pthread_cond_destroy(&count_condvar);
+  pthread_mutex_destroy(&setup_mutex);
+  pthread_cond_destroy(&setup_condvar);
   pthread_exit (NULL);
 
 }
